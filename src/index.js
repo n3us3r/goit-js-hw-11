@@ -1,67 +1,88 @@
 import './sass/main.scss';
-import fetchService from './js/fetch-service-api'
-const axios = require('axios').default;
+import fetchImages from './js/fetch-service-api';
+import renderMarkup from './js/renderMarkup';
+
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
 
 const refs = {
 	inputForm: document.querySelector('#search-form'),
-	inputBtn: document.querySelector('button'),
 	galleryItem: document.querySelector('.gallery'),
-	loadMoreBtn: document.querySelector('.load-more')
+	inputBtn: document.querySelector('button'),
+	loadMoreBtn: document.querySelector('.btn-load-more'),
+	goTop: document.querySelector('.btn-to-top')
 }
 
 let inputQuery = "";
+let page = 1;
+const perPage = 40;
 
 refs.inputForm.addEventListener('submit', onSubmit);
+refs.loadMoreBtn.addEventListener('click', onLoadMore)
+refs.goTop.addEventListener('click', onGoUp)
 
 function onSubmit(e) {
 	e.preventDefault();
 	
-	inputQuery = e.target.elements.searchQuery.value;
+	refs.loadMoreBtn.classList.add("is-hidden");
+	clearDom();
+	page = 1;
+	inputQuery = e.target.elements.searchQuery.value.trim();
 
-	fetchService(inputQuery).then(hits => renderMarkup(hits)).catch(console.log);
+	fetchImages(inputQuery, page, perPage)
+	.then(data => {
+		if (data.totalHits === 0) {
+			imagesNotFoundAlert();
+		} else {
+			foundImagesAmount(data.totalHits);
+			if (data.totalHits > perPage) {
+				refs.loadMoreBtn.classList.remove("is-hidden");
+				refs.goTop.classList.remove('is-hidden');
+			}
+			return data.hits
+		} 
+	}).then(hits => renderMarkup(hits)).catch(console.log).finally(() => {
+		refs.inputForm.reset();
+	})
 }
 
+function onLoadMore() {
 
+	page += 1;
 
-	function renderMarkup(images) {
-	const test = images.map(({webformatURL, tags, likes, views, comments, downloads}) => {
-			return `<div class="photo-card">
-			<img src="${webformatURL}" alt="${tags}" width=400 loading="lazy" />
-			<div class="info">
-			  <p class="info-item">
-				 <b>Likes: ${likes}</b>
-			  </p>
-			  <p class="info-item">
-				 <b>Views: ${views}</b>
-			  </p>
-			  <p class="info-item">
-				 <b>Comments: ${comments}</b>
-			  </p>
-			  <p class="info-item">
-				 <b>Downloads: ${downloads}</b>
-			  </p>
-			</div>
-		 </div>`
-		}
-	)
-	refs.galleryItem.innerHTML = test;
-}
+	fetchImages(inputQuery, page, perPage)
+	.then(data => {
 
-
+		const totalPages = Math.ceil(data.totalHits / perPage);
+		if (page === totalPages) {
+			refs.loadMoreBtn.classList.add('is-hidden');
 			
+			endOfSearch();
+		}
 
-		// ).join("");
-		// refs.galleryItem.innerHTML = renderMarkup;
+		renderMarkup(data.hits);
+		
+	}).catch(console.log);
+}
 
-// }
 
-// function clearDom() {
 
-// }
-// webformatURL - ссылка на маленькое изображение для списка карточек.
-// largeImageURL - ссылка на большое изображение.
-// likes - количество лайков.
-// views - количество просмотров.
-// comments - количество комментариев.
-// downloads - количество загрузок.
+function onGoUp() {
+window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function clearDom() {
+	refs.galleryItem.innerHTML = "";
+	refs.goTop.classList.add('is-hidden');
+}
+
+function imagesNotFoundAlert() {
+	Notify.failure("Sorry, there are no images matching your search query. Please try again.");
+}
+
+function foundImagesAmount(totalHits) {
+	Notify.success(`Hooray! We found ${totalHits} images.`);
+}
+
+function endOfSearch() {
+	Notify.warning("We're sorry, but you've reached the end of search results.")
+}

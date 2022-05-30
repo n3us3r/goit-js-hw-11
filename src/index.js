@@ -1,24 +1,32 @@
 import './sass/main.scss';
-import fetchImages from './js/fetch-service-api';
-import renderMarkup from './js/renderMarkup';
-
+import { fetchImages } from './js/fetch-service-api';
+import { renderMarkup } from './js/renderMarkup';
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
+import SimpleLightbox from "simplelightbox";
+import "simplelightbox/dist/simple-lightbox.min.css";
+
 
 const refs = {
 	inputForm: document.querySelector('#search-form'),
 	galleryItem: document.querySelector('.gallery'),
-	inputBtn: document.querySelector('button'),
+	inputBtn: document.querySelector('button[submit]'),
 	loadMoreBtn: document.querySelector('.btn-load-more'),
-	goTop: document.querySelector('.btn-to-top')
+	goTop: document.querySelector('.btn-to-top'),
+	
+
 }
 
 let inputQuery = "";
 let page = 1;
 const perPage = 40;
+let simpleLightbox;
+
 
 refs.inputForm.addEventListener('submit', onSubmit);
-refs.loadMoreBtn.addEventListener('click', onLoadMore)
-refs.goTop.addEventListener('click', onGoUp)
+refs.loadMoreBtn.addEventListener('click', onLoadMore);
+refs.goTop.addEventListener('click', onGoUp);
+
+
 
 function onSubmit(e) {
 	e.preventDefault();
@@ -29,7 +37,9 @@ function onSubmit(e) {
 	inputQuery = e.target.elements.searchQuery.value.trim();
 
 	fetchImages(inputQuery, page, perPage)
-	.then(data => {
+	// .then(data => {
+	.then(({data}) => {
+		console.log('data', data);
 		if (data.totalHits === 0) {
 			imagesNotFoundAlert();
 		} else {
@@ -40,7 +50,10 @@ function onSubmit(e) {
 			}
 			return data.hits
 		} 
-	}).then(hits => renderMarkup(hits)).catch(console.log).finally(() => {
+	}).then(hits => {
+		renderMarkup(hits)
+		simpleLightbox = new SimpleLightbox('.photo-card a').refresh();
+	}).catch(console.log).finally(() => {
 		refs.inputForm.reset();
 	})
 }
@@ -50,7 +63,8 @@ function onLoadMore() {
 	page += 1;
 
 	fetchImages(inputQuery, page, perPage)
-	.then(data => {
+	// .then(data => {
+	.then(({data}) => {
 
 		const totalPages = Math.ceil(data.totalHits / perPage);
 		if (page === totalPages) {
@@ -60,7 +74,7 @@ function onLoadMore() {
 		}
 
 		renderMarkup(data.hits);
-		
+		simpleLightbox = new SimpleLightbox('.photo-card a').refresh();
 	}).catch(console.log);
 }
 

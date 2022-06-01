@@ -12,9 +12,13 @@ const refs = {
 	inputBtn: document.querySelector('button[submit]'),
 	loadMoreBtn: document.querySelector('.btn-load-more'),
 	goTop: document.querySelector('.btn-to-top'),
-	
-
 }
+
+refs.inputForm.addEventListener('submit', onSubmit);
+refs.loadMoreBtn.addEventListener('click', onLoadMore);
+refs.goTop.addEventListener('click', onGoUp);
+window.addEventListener('scroll', onScroll);
+
 
 let inputQuery = "";
 let page = 1;
@@ -22,11 +26,7 @@ const perPage = 40;
 let simpleLightbox;
 
 
-refs.inputForm.addEventListener('submit', onSubmit);
-refs.loadMoreBtn.addEventListener('click', onLoadMore);
-refs.goTop.addEventListener('click', onGoUp);
-
-
+onScroll();
 
 function onSubmit(e) {
 	e.preventDefault();
@@ -39,20 +39,22 @@ function onSubmit(e) {
 	fetchImages(inputQuery, page, perPage)
 	// .then(data => {
 	.then(({data}) => {
-		console.log('data', data);
 		if (data.totalHits === 0) {
+			
 			imagesNotFoundAlert();
+
 		} else {
+			
 			foundImagesAmount(data.totalHits);
+			renderMarkup(data.hits)
+
 			if (data.totalHits > perPage) {
 				refs.loadMoreBtn.classList.remove("is-hidden");
-				refs.goTop.classList.remove('is-hidden');
-			}
-			return data.hits
+
+				simpleLightbox = new SimpleLightbox('.gallery a').refresh();
+				
+				}
 		} 
-	}).then(hits => {
-		renderMarkup(hits)
-		simpleLightbox = new SimpleLightbox('.photo-card a').refresh();
 	}).catch(console.log).finally(() => {
 		refs.inputForm.reset();
 	})
@@ -61,7 +63,6 @@ function onSubmit(e) {
 function onLoadMore() {
 
 	page += 1;
-
 	fetchImages(inputQuery, page, perPage)
 	// .then(data => {
 	.then(({data}) => {
@@ -72,16 +73,36 @@ function onLoadMore() {
 			
 			endOfSearch();
 		}
-
 		renderMarkup(data.hits);
-		simpleLightbox = new SimpleLightbox('.photo-card a').refresh();
+		simpleLightbox = new SimpleLightbox('.gallery a').refresh();
+
+
 	}).catch(console.log);
 }
 
 
 
+function onScroll() {
+	const windowHeight = document.documentElement.clientHeight;
+	const coords = window.scrollY;
+
+	if (coords < windowHeight) {
+		refs.goTop.classList.add('is-hidden');
+	} else if (coords > windowHeight) {
+		refs.goTop.classList.remove('is-hidden');
+	}
+	console.log(windowHeight);
+	console.log(coords);
+}
+
 function onGoUp() {
-window.scrollTo({ top: 0, behavior: 'smooth' });
+ if (window.scrollY > 0) {
+	window.scrollTo({
+		top: 0,
+		behavior: "smooth",
+})
+
+}
 }
 
 function clearDom() {

@@ -14,21 +14,29 @@
   <body>
     <!-- Так добавляются фрагменты в главные HTML-файлы страниц. -->
     <!-- <include src="./partials/example.html"></include> -->
-	 <form class="search-form" id="search-form">
-		<input
-		  type="text"
-		  name="searchQuery"
-		  autocomplete="off"
-		  placeholder="Search images..."
-		/>
-		<button type="submit">Search</button>
-	 </form>
-
-	 <div class="gallery">
-		<!-- Карточки изображений -->
+	 <div class="search-container">
+		<form class="search-form" id="search-form">
+			<input
+			  type="text"
+			  name="searchQuery"
+			  autocomplete="off"
+			  placeholder="Search images..."
+			/>
+			<button type="submit">Search</button>
+		 </form>
 	 </div>
-	 <button type="button" class="btn-load-more is-hidden">Load more</button>
-	 <button type="button" class="btn-to-top is-hidden">Go to top</button>
+
+
+	 <div class="gallery-container">
+		<div class="gallery">
+			<!-- Карточки изображений -->
+		 </div>
+		 <button type="button" class="btn-load-more is-hidden">Load more</button>
+		 <a class="btn-to-top is-hidden">
+			 <span class="to-top-icon"></span>
+		 </a>
+	 </div>
+
 
 
     <!-- Скрипт идёт последним в разметке. В нём уже подключен главный SASS-файл. -->

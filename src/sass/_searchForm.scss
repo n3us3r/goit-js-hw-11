@@ -1,7 +1,30 @@
-.search-form {
-	// display: flex;
-	// justify-content: center;
+.search-container {
+	display: flex;
+	justify-content: center;
+	z-index: 2;
+	position: fixed;
 	background-color: rgb(57, 57, 197);
 	text-align: center;
 	padding: 10px 0;
+	width: 100%;
+	padding-top: 10px;
+	padding-bottom: 10px;
+}
+.search-form {
+	width: 100%;
+	display: flex;
+	justify-content: center;
+ }
+
+.search-form button {
+	border: none;
+	background-color: rgb(200, 200, 200); 
+	border-radius: 4px;
+	cursor: pointer;
+}
+
+.search-form button:hover,
+.search-form button:focus {
+	background-color: red;
+	transition: all 0.3s; 
 }
